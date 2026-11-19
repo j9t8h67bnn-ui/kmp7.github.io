@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Research acceleration · Jagged frontier</title>
+  <style>
+        * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+	  font-family: 'Roboto', 'Arial', sans-serif;
+    }
+
+    :root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f5f5f5;
+      --bg-card: #ffffff;
+      --text-primary: #1e1e1e;
+      --text-secondary: #3d3d3d;
+      --text-muted: #5e5e5e;
+      --border-light: #e0e0e0;
+      --border-medium: #d0d0d0;
+
+      --header-bg: #0F5F50;
+      --nav-bg: #0F5F50;
+      --accent-green: #269e70;
+      --accent-teal: #6AB0A6;
+      --accent-amber: #D48B12;
+
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.08);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --transition: 0.2s ease;
+
+      --font-serif: 'Roboto', 'Arial', sans-serif;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    /* ---------- ТЁМНАЯ ТЕМА ---------- */
+    body.dark {
+      --bg-primary: #121212;
+      --bg-secondary: #1c1c1c;
+      --bg-card: #1e1e1e;
+      --text-primary: #ececec;
+      --text-secondary: #c8c8c8;
+      --text-muted: #a0a0a0;
+      --border-light: #2e2e2e;
+      --border-medium: #3a3a3a;
+
+      --header-bg: #0a3d33;
+      --nav-bg: #0a3d33;
+      --accent-green: #3dbb8a;
+      --accent-teal: #7fc9be;
+      --accent-amber: #e6a33b;
+
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
+      --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      transition: background var(--transition), color var(--transition);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    /* ---------- ХЕДЕР ---------- */
+    .app-header {
+      background: var(--header-bg);
+      color: #fff;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      box-shadow: var(--shadow-md);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .app-header h1 {
+      font-family: var(--font-serif);
+      font-weight: 500;
+      font-size: 1.6rem;
+      letter-spacing: 0.3px;
+      line-height: 1.3;
+    }
+
+    .app-header h1 small {
+      display: block;
+      font-family: var(--font-sans);
+      font-size: 0.8rem;
+      font-weight: 400;
+      opacity: 0.75;
+      margin-top: 2px;
+      letter-spacing: 0.5px;
+    }
+
+    /* ---------- ПЕРЕКЛЮЧАТЕЛЬ ТЕМЫ (ваш код) ---------- */
+    .theme-toggle {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background var(--transition), border-color var(--transition), transform 0.15s;
+      flex-shrink: 0;
+      color: #fff;
+    }
+
+    .theme-toggle:hover {
+      background: rgba(255, 255, 255, 0.22);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .theme-toggle:active {
+      transform: scale(0.94);
+    }
+
+    .theme-toggle svg {
+      width: 22px;
+      height: 22px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: opacity var(--transition);
+    }
+
+    .theme-toggle .icon-sun {
+      display: none;
+    }
+
+    body.dark .theme-toggle .icon-moon {
+      display: none;
+    }
+
+    body.dark .theme-toggle .icon-sun {
+      display: block;
+    }
+
+    /* ---------- НАВИГАЦИЯ / ВКЛАДКИ ---------- */
+    .nav-tabs {
+      background: var(--bg-card);
+      border-bottom: 2px solid var(--border-light);
+      display: flex;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      position: sticky;
+      top: 76px;
+      z-index: 90;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .nav-tabs button {
+      flex: 1 0 auto;
+      min-width: 110px;
+      padding: 14px 18px;
+      background: none;
+      border: none;
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: color var(--transition), border-color var(--transition), background var(--transition);
+      white-space: nowrap;
+    }
+
+    .nav-tabs button:hover {
+      color: var(--accent-green);
+      background: var(--bg-secondary);
+    }
+
+    .nav-tabs button.active {
+      color: var(--accent-green);
+      border-bottom-color: var(--accent-amber);
+      font-weight: 600;
+    }
+
+    /* ---------- ОСНОВНОЙ КОНТЕНТ ---------- */
+    .app-main {
+      flex: 1;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
+    }
+
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--accent-green);
+      margin-bottom: 6px;
+      letter-spacing: 0.2px;
+    }
+
+    .section-subtitle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      border-left: 3px solid var(--accent-amber);
+      padding-left: 12px;
+    }
+
+    /* ---------- КАРТОЧКИ ТЕРМИНОВ ---------- */
+    .terms-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 20px;
+    }
+
+    .term-card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 20px 20px 16px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-light);
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow var(--transition), transform 0.15s, border-color var(--transition);
+      position: relative;
+    }
+
+    .term-card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: var(--accent-teal);
+    }
+
+    .term-card .term-en {
+      font-family: var(--font-serif);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--accent-green);
+      margin-bottom: 4px;
+      line-height: 1.3;
+    }
+
+    .term-card .term-ru {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--accent-amber);
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed var(--border-medium);
+    }
+
+    .term-card .term-def {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.55;
+      flex: 1;
+      margin-bottom: 12px;
+    }
+
+    /* ---------- КОММЕНТАРИИ (АВТОРСКИЕ) ---------- */
+    .comments-section {
+      margin-top: 8px;
+      border-top: 1px solid var(--border-light);
+      padding-top: 10px;
+    }
+
+    .comments-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .comments-count {
+      background: var(--accent-teal);
+      color: #fff;
+      border-radius: 10px;
+      padding: 1px 9px;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    .comment-item {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      border-left: 3px solid var(--accent-amber);
+      position: relative;
+      word-break: break-word;
+    }
+
+    .comment-item .comment-meta {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .comment-item .comment-text {
+      white-space: pre-wrap;
+    }
+
+    .comment-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .comment-actions button {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.75rem;
+      padding: 2px 4px;
+      border-radius: 4px;
+      transition: color var(--transition), background var(--transition);
+    }
+
+    .comment-actions button:hover {
+      color: var(--accent-amber);
+      background: var(--border-light);
+    }
+
+    .comment-form {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .comment-form textarea {
+      width: 100%;
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      resize: vertical;
+      min-height: 52px;
+      transition: border-color var(--transition);
+    }
+
+    .comment-form textarea:focus {
+      outline: none;
+      border-color: var(--accent-teal);
+      box-shadow: 0 0 0 2px rgba(106, 176, 166, 0.2);
+    }
+
+    .comment-form .form-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    /* ---------- КНОПКИ ---------- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: background var(--transition), color var(--transition), border-color var(--transition), transform 0.1s;
+      text-decoration: none;
+      line-height: 1.3;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn-primary {
+      background: var(--accent-green);
+      color: #fff;
+      border-color: var(--accent-green);
+    }
+
+    .btn-primary:hover {
+      background: #1e8a60;
+      border-color: #1e8a60;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--accent-green);
+      border-color: var(--accent-teal);
+    }
+
+    .btn-secondary:hover {
+      background: var(--accent-teal);
+      color: #fff;
+      border-color: var(--accent-teal);
+    }
+
+    .btn-danger {
+      background: transparent;
+      color: #b33a3a;
+      border-color: #d9a0a0;
+    }
+
+    .btn-danger:hover {
+      background: #b33a3a;
+      color: #fff;
+      border-color: #b33a3a;
+    }
+
+    .btn-small {
+      font-size: 0.78rem;
+      padding: 5px 12px;
+    }
+
+    .btn-amber {
+      background: var(--accent-amber);
+      color: #fff;
+      border-color: var(--accent-amber);
+    }
+
+    .btn-amber:hover {
+      background: #b8750f;
+      border-color: #b8750f;
+    }
+
+    /* ---------- ФОРМА ДОБАВЛЕНИЯ СТАТЬИ ---------- */
+    .add-term-form {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 22px 20px;
+      margin-bottom: 28px;
+      border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .add-term-form h3 {
+      font-family: var(--font-serif);
+      font-size: 1.1rem;
+      color: var(--accent-green);
+      margin-bottom: 14px;
+      font-weight: 600;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-group label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-sm);
+      padding: 9px 12px;
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--accent-teal);
+      box-shadow: 0 0 0 2px rgba(106, 176, 166, 0.2);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 70px;
+    }
+
+    .form-actions-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    /* ---------- ПУСТОЕ СОСТОЯНИЕ ---------- */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      border: 1px dashed var(--border-medium);
+    }
+
+    /* ---------- ПОДВАЛ ---------- */
+    .app-footer {
+      text-align: center;
+      padding: 18px 16px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border-light);
+      background: var(--bg-card);
+      margin-top: auto;
+    }
+
+    .app-footer a {
+      color: var(--accent-green);
+      text-decoration: none;
+    }
+
+    .app-footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* ---------- АДАПТАЦИЯ ---------- */
+    @media (max-width: 640px) {
+      .app-header {
+        padding: 14px 16px;
+      }
+      .app-header h1 {
+        font-size: 1.1rem;
+      }
+      .app-header h1 small {
+        font-size: 0.65rem;
+      }
+      .theme-toggle {
+        width: 38px;
+        height: 38px;
+      }
+      .theme-toggle svg {
+        width: 18px;
+        height: 18px;
+      }
+      .nav-tabs {
+        top: 68px;
+      }
+      .nav-tabs button {
+        padding: 12px 14px;
+        font-size: 0.82rem;
+        min-width: 90px;
+      }
+      .app-main {
+        padding: 16px 12px 50px;
+      }
+      .terms-grid {
+        grid-template-columns: 1fr;
+      }
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      .section-title {
+        font-size: 1.25rem;
+      }
+      .term-card {
+        padding: 16px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .app-header h1 {
+        font-size: 0.95rem;
+      }
+    }
+
+    /* ---------- СКРОЛЛБАР ---------- */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-secondary);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--accent-teal);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-green);
+    }
+	
+	.white-link {
+  color: white;
+  
+}
+  </style>
+  
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+</head>
+<body>
+
+  <!-- ========== HEADER ========== -->
+  <header class="app-header">
+    <h1>
+      Jagged Frontier
+      <small><a class="white-link"href="https://openai.com/index/research-acceleration-jagged-frontier/" target="_blank" rel="noopener">«Rese arch acceleration: The jagged frontier»</a> + <a class="white-link"href="https://share.google/aimode/xEpNoJ6JBinI88GdA" target="_blank" rel="noopener">Eva analyzes</a></small>
+	  
+    </h1>
+    <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему">
+      <svg class="icon-moon" viewBox="0 0 24 24">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/>
+      </svg>
+      <svg class="icon-sun" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="5"/>
+        <line x1="12" y1="1" x2="12" y2="3"/>
+        <line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/>
+        <line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+    </button>
+  </header>
+
+  <!-- ========== NAVIGATION ========== -->
+  <nav class="nav-tabs" role="tablist" aria-label="Разделы словаря">
+    <button class="active" data-tab="all" role="tab" aria-selected="true">Все термины</button>
+    <button data-tab="base" role="tab" aria-selected="false">Базовые</button>
+    <button data-tab="custom" role="tab" aria-selected="false">Мои статьи</button>
+  </nav>
+
+  <!-- ========== MAIN ========== -->
+  <main class="app-main" id="appMain">
+
+    <!-- Форма добавления новой статьи (скрыта для вкладок "Базовые" и "Все") -->
+    <div id="addTermSection">
+      <div class="add-term-form">
+        <h3>Добавить авторскую статью</h3>
+        <form id="addTermForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="termEn">Английский термин *</label>
+              <input type="text" id="termEn" required placeholder="Например, OrlovaEA: Recursive self-improvement" />
+            </div>
+            <div class="form-group">
+              <label for="termRu">Русский эквивалент *</label>
+              <input type="text" id="termRu" required placeholder="Например, ОрловаЕА: Рекурсивное самосовершенствование" />
+            </div>
+            <div class="form-group full-width">
+              <label for="termDef">Пояснение на русском *</label>
+              <textarea id="termDef" required placeholder="Дайте определение термина..."></textarea>
+            </div>
+          </div>
+          <div class="form-actions-row">
+            <button type="submit" class="btn btn-primary">Сохранить статью</button>
+            <button type="button" class="btn btn-secondary" id="cancelAddBtn">Очистить</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Контейнер для карточек -->
+    <div id="termsContainer"></div>
+
+    <!-- Пустое состояние (если нет статей) -->
+    <div id="emptyState" class="empty-state" style="display:none;">
+      Нет статей для отображения. Добавьте свою первую статью.
+    </div>
+
+  </main>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="app-footer">
+    Учебный словарь по статье <a href="https://openai.com/index/research-acceleration-jagged-frontier/" target="_blank" rel="noopener">OpenAI «Research acceleration: The jagged frontier»</a><br> <br><p>© 2026 | kmp CC BY-NC-SA 4.0<br>
+для всех</p>
+  </footer>
+
+  <script>
+    (function() {
+      'use strict';
+
+      // ============================================================
+      // 1. БАЗОВЫЙ СЛОВАРЬ (JASON — встроенные статьи)
+      // ============================================================
+      const BASE_TERMS = [
+        {
+          id: 'base-1',
+          en: 'Jagged frontier',
+          ru: 'Зубчатый фронтир',
+          def: 'Метафора, описывающая неравномерность возможностей ИИ: системы превосходно справляются с одними задачами и плохо — с другими, даже внутри одной области. Успех агентов зависит от типа задачи (например, мониторинг 79%, написание кода для инференса 25%).',
+          isCustom: false
+        },
+        {
+          id: 'base-2',
+          en: 'Research acceleration',
+          ru: 'Ускорение исследований',
+          def: 'Процесс, при котором ИИ-системы ускоряют проведение научных исследований, выполняя часть работы автономно и меняя рабочие процессы исследователей.',
+          isCustom: false
+        },
+        {
+          id: 'base-3',
+          en: 'Recursive self-improvement (RSI)',
+          ru: 'Рекурсивное самосовершенствование',
+          def: 'Процесс, при котором ИИ ускоряет разработку будущих ИИ-систем. Прозрачная отчётность по индикаторам RSI необходима для общественного обсуждения рисков и мер безопасности.',
+          isCustom: false
+        },
+        {
+          id: 'base-4',
+          en: 'Coding agent',
+          ru: 'Кодирующий агент',
+          def: 'ИИ-агент, способный автономно выполнять задачи по программированию, отладке и мониторингу экспериментов. Используется исследователями для делегирования рутинных и продолжительных задач.',
+          isCustom: false
+        },
+        {
+          id: 'base-5',
+          en: 'Agent workday',
+          ru: 'Агентский рабочий день',
+          def: 'Метрика, определяемая как каждые восемь часов использования агента. Отражает «календарное» время работы агентов в отличие от денежных затрат.',
+          isCustom: false
+        },
+        {
+          id: 'base-6',
+          en: 'Human oversight',
+          ru: 'Человеческий надзор',
+          def: 'Необходимость сохранения человеком контроля над процессом разработки ИИ. Исследователи остаются ключевым звеном цикла исследований, несмотря на рост автономности агентов.',
+          isCustom: false
+        },
+        {
+          id: 'base-7',
+          en: 'Safety and alignment',
+          ru: 'Безопасность и выравнивание',
+          def: 'Область исследований, направленная на обеспечение безопасного и соответствующего целям человека поведения ИИ. Отмечен наибольший абсолютный рост задокументированных усилий среди всех направлений OpenAI.',
+          isCustom: false
+        },
+        {
+          id: 'base-8',
+          en: 'Research taste',
+          ru: 'Исследовательский вкус',
+          def: 'Способность формулировать и оценивать концептуальные исследовательские идеи. Может быть узким местом для рекурсивного самосовершенствования, так как агенты пока плохо справляются с генерацией хорошо поставленных задач.',
+          isCustom: false
+        },
+        {
+          id: 'base-9',
+          en: 'Agentic harness',
+          ru: 'Агентская обвязка',
+          def: 'Инфраструктура и настройки, управляющие поведением агента (контекст, инструменты, ограничения). Изменения в обвязке могут влиять на эффективность и стоимость использования агентов.',
+          isCustom: false
+        },
+        {
+          id: 'base-10',
+          en: 'Epoch Capabilities Index (ECI)',
+          ru: 'Индекс возможностей Epoch',
+          def: 'Методика отслеживания прогресса общих возможностей ИИ. OpenAI использует внутреннюю версию (OECI) на основе публичных и внутренних бенчмарков для измерения исследовательских результатов.',
+          isCustom: false
+        },
+		
+		{
+		  "id": "base-11",
+		  "en": "AI uplift",
+		  "ru": "Прирост от ИИ (ИИ-аплift)",
+		  "def": "Измеримый прирост продуктивности исследований с ИИ-инструментами. В отчёте OpenAI оценивается через долю задач, автономно выполняемых агентами и готовность исследователей обменивать вычисления на доступ к фронтирным агентам. Прирост  и зависит от типа задачи (зубчатый фронтир).",
+		  "isCustom": false
+		},
+		{
+		  "id": "base-12",
+		  "en": "Inference and serving stack",
+		  "ru": "Стек инференса и обслуживания",
+		  "def": "Программно-аппаратный комплекс, обеспечивающий инференс моделей и их обслуживание: загрузка весов, батчинг запросов, маршрутизация ++. В статье OpenAI одна из задач с наименьшей автономной успешностью агентов (до 25%).",
+		  "isCustom": false
+		}
+      ];
+
+      // ============================================================
+      // 2. СОСТОЯНИЕ ПРИЛОЖЕНИЯ
+      // ============================================================
+      let customTerms = [];        // авторские статьи
+      let allComments = {};        // { termId: [ { id, text, date } ] }
+      let currentTab = 'all';      // 'all' | 'base' | 'custom'
+
+      // ============================================================
+      // 3. LOCAL STORAGE
+      // ============================================================
+      const LS_KEYS = {
+        CUSTOM_TERMS: 'lexicon_custom_terms',
+        COMMENTS: 'lexicon_comments',
+        THEME: 'lexicon_theme'
+      };
+
+      function loadFromStorage() {
+        try {
+          const storedTerms = localStorage.getItem(LS_KEYS.CUSTOM_TERMS);
+          if (storedTerms) {
+            customTerms = JSON.parse(storedTerms);
+          }
+          const storedComments = localStorage.getItem(LS_KEYS.COMMENTS);
+          if (storedComments) {
+            allComments = JSON.parse(storedComments);
+          }
+        } catch (e) {
+          console.warn('Ошибка загрузки из localStorage:', e);
+        }
+      }
+
+      function saveCustomTerms() {
+        try {
+          localStorage.setItem(LS_KEYS.CUSTOM_TERMS, JSON.stringify(customTerms));
+        } catch (e) {
+          console.warn('Ошибка сохранения статей:', e);
+        }
+      }
+
+      function saveComments() {
+        try {
+          localStorage.setItem(LS_KEYS.COMMENTS, JSON.stringify(allComments));
+        } catch (e) {
+          console.warn('Ошибка сохранения комментариев:', e);
+        }
+      }
+
+      // ============================================================
+      // 4. УТИЛИТЫ
+      // ============================================================
+      function generateId() {
+        return 'custom-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9);
+      }
+
+      function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+      }
+
+      function formatDate(isoString) {
+        try {
+          const d = new Date(isoString);
+          return d.toLocaleDateString('ru-RU', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+        } catch (e) {
+          return '';
+        }
+      }
+
+      // ============================================================
+      // 5. ПОЛУЧЕНИЕ ВСЕХ СТАТЕЙ (БАЗОВЫЕ + АВТОРСКИЕ)
+      // ============================================================
+      function getAllTerms() {
+        return [...BASE_TERMS, ...customTerms];
+      }
+
+      function getFilteredTerms() {
+        if (currentTab === 'base') {
+          return BASE_TERMS;
+        }
+        if (currentTab === 'custom') {
+          return customTerms;
+        }
+        return getAllTerms();
+      }
+
+      // ============================================================
+      // 6. РЕНДЕРИНГ
+      // ============================================================
+      const termsContainer = document.getElementById('termsContainer');
+      const emptyState = document.getElementById('emptyState');
+      const addTermSection = document.getElementById('addTermSection');
+
+      function render() {
+        // Показываем/скрываем форму добавления только на вкладке "Все" или "Мои статьи"
+        addTermSection.style.display = (currentTab === 'base') ? 'none' : 'block';
+
+        const terms = getFilteredTerms();
+
+        if (terms.length === 0) {
+          termsContainer.innerHTML = '';
+          emptyState.style.display = 'block';
+          if (currentTab === 'custom') {
+            emptyState.textContent = 'У вас пока нет авторских статей. Добавьте первую статью в форме выше.';
+          } else {
+            emptyState.textContent = 'Нет статей для отображения.';
+          }
+          return;
+        }
+
+        emptyState.style.display = 'none';
+
+        let html = '<div class="terms-grid">';
+        terms.forEach(term => {
+          const comments = allComments[term.id] || [];
+          const isCustom = customTerms.some(t => t.id === term.id);
+
+          html += `
+            <article class="term-card" data-term-id="${term.id}">
+              <div class="term-en">${escapeHtml(term.en)}</div>
+              <div class="term-ru">${escapeHtml(term.ru)}</div>
+              <div class="term-def">${escapeHtml(term.def)}</div>
+
+              ${isCustom ? `
+                <div style="display:flex; justify-content:flex-end; margin-bottom:4px;">
+                  <button class="btn btn-danger btn-small delete-term-btn" data-term-id="${term.id}" title="Удалить статью">Удалить</button>
+                </div>
+              ` : ''}
+
+              <div class="comments-section">
+                <div class="comments-header">
+                  <span>Комментарии</span>
+                  <span class="comments-count">${comments.length}</span>
+                </div>
+                <div class="comments-list" data-comments-for="${term.id}">
+                  ${renderComments(term.id, comments)}
+                </div>
+                <div class="comment-form">
+                  <textarea placeholder="Ваши ФИО и комментарий..." data-comment-input="${term.id}" rows="2"></textarea>
+                  <div class="form-actions">
+                    <button class="btn btn-primary btn-small add-comment-btn" data-term-id="${term.id}">Добавить</button>
+                  </div>
+                </div>
+              </div>
+            </article>
+          `;
+        });
+        html += '</div>';
+        termsContainer.innerHTML = html;
+
+        // Навешиваем обработчики после рендеринга
+        attachEventListeners();
+      }
+
+      function renderComments(termId, comments) {
+        if (!comments || comments.length === 0) {
+          return '<div style="font-size:0.78rem; color:var(--text-muted); font-style:italic; padding:2px 0;">Пока нет комментариев</div>';
+        }
+        return comments.map(c => `
+          <div class="comment-item" data-comment-id="${c.id}">
+            <div class="comment-meta">
+              <span>${formatDate(c.date)}</span>
+              <div class="comment-actions">
+                <button class="delete-comment-btn" data-term-id="${termId}" data-comment-id="${c.id}" title="Удалить комментарий">Удалить</button>
+              </div>
+            </div>
+            <div class="comment-text">${escapeHtml(c.text)}</div>
+          </div>
+        `).join('');
+      }
+
+      // ============================================================
+      // 7. ОБРАБОТЧИКИ СОБЫТИЙ
+      // ============================================================
+      function attachEventListeners() {
+        // Удаление авторской статьи
+        document.querySelectorAll('.delete-term-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const termId = this.dataset.termId;
+            if (confirm('Удалить эту авторскую статью? Все комментарии к ней также будут удалены.')) {
+              customTerms = customTerms.filter(t => t.id !== termId);
+              delete allComments[termId];
+              saveCustomTerms();
+              saveComments();
+              render();
+            }
+          });
+        });
+
+        // Добавление комментария
+        document.querySelectorAll('.add-comment-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const termId = this.dataset.termId;
+            const textarea = document.querySelector(`textarea[data-comment-input="${termId}"]`);
+            if (!textarea) return;
+            const text = textarea.value.trim();
+            if (!text) {
+              textarea.focus();
+              return;
+            }
+            if (!allComments[termId]) {
+              allComments[termId] = [];
+            }
+            allComments[termId].push({
+              id: 'cmt-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+              text: text,
+              date: new Date().toISOString()
+            });
+            saveComments();
+            textarea.value = '';
+            render();
+          });
+        });
+
+        // Удаление комментария
+        document.querySelectorAll('.delete-comment-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const termId = this.dataset.termId;
+            const commentId = this.dataset.commentId;
+            if (!allComments[termId]) return;
+            allComments[termId] = allComments[termId].filter(c => c.id !== commentId);
+            saveComments();
+            render();
+          });
+        });
+
+        // Ctrl+Enter для отправки комментария
+        document.querySelectorAll('textarea[data-comment-input]').forEach(textarea => {
+          textarea.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+              e.preventDefault();
+              const termId = this.dataset.commentInput;
+              const addBtn = document.querySelector(`.add-comment-btn[data-term-id="${termId}"]`);
+              if (addBtn) addBtn.click();
+            }
+          });
+        });
+      }
+
+      // ============================================================
+      // 8. ФОРМА ДОБАВЛЕНИЯ СТАТЬИ
+      // ============================================================
+      const addTermForm = document.getElementById('addTermForm');
+
+      addTermForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const en = document.getElementById('termEn').value.trim();
+        const ru = document.getElementById('termRu').value.trim();
+        const def = document.getElementById('termDef').value.trim();
+
+        if (!en || !ru || !def) {
+          alert('Пожалуйста, заполните все поля.');
+          return;
+        }
+
+        const newTerm = {
+          id: generateId(),
+          en: en,
+          ru: ru,
+          def: def,
+          isCustom: true
+        };
+
+        customTerms.push(newTerm);
+        saveCustomTerms();
+
+        // Сбрасываем форму
+        addTermForm.reset();
+
+        // Переключаемся на вкладку "Мои статьи", чтобы увидеть новую статью
+        // (или остаёмся на текущей, но рендерим)
+        render();
+      });
+
+      document.getElementById('cancelAddBtn').addEventListener('click', function() {
+        addTermForm.reset();
+        document.getElementById('termEn').focus();
+      });
+
+      // ============================================================
+      // 9. ВКЛАДКИ
+      // ============================================================
+      const tabButtons = document.querySelectorAll('.nav-tabs button');
+
+      tabButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          const tab = this.dataset.tab;
+
+          // Обновляем активный класс
+          tabButtons.forEach(b => {
+            b.classList.remove('active');
+            b.setAttribute('aria-selected', 'false');
+          });
+          this.classList.add('active');
+          this.setAttribute('aria-selected', 'true');
+
+          currentTab = tab;
+          render();
+        });
+      });
+
+      // ============================================================
+      // 10. ПЕРЕКЛЮЧАТЕЛЬ ТЕМЫ
+      // ============================================================
+      const themeToggle = document.getElementById('themeToggle');
+
+      function applyTheme(theme) {
+        if (theme === 'dark') {
+          document.body.classList.add('dark');
+        } else {
+          document.body.classList.remove('dark');
+        }
+      }
+
+      function getPreferredTheme() {
+        const stored = localStorage.getItem(LS_KEYS.THEME);
+        if (stored === 'dark' || stored === 'light') {
+          return stored;
+        }
+        // По умолчанию — светлая (как в требованиях: белый и #f5f5f5)
+        return 'light';
+      }
+
+      themeToggle.addEventListener('click', function() {
+        const isDark = document.body.classList.contains('dark');
+        const newTheme = isDark ? 'light' : 'dark';
+        applyTheme(newTheme);
+        localStorage.setItem(LS_KEYS.THEME, newTheme);
+      });
+
+      // ============================================================
+      // 11. ИНИЦИАЛИЗАЦИЯ
+      // ============================================================
+      function init() {
+        // Загружаем сохранённые данные
+        loadFromStorage();
+
+        // Применяем тему
+        const theme = getPreferredTheme();
+        applyTheme(theme);
+
+        // Рендерим начальное состояние
+        render();
+      }
+
+      // Запуск после загрузки DOM (скрипт в конце body, но на всякий случай)
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>

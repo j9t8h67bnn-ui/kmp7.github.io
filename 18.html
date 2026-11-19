@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>kmp+</title>
+    <style>
+             * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', 'Arial', sans-serif;
+        }
+
+        :root {
+            --bg-main: #ffffff;
+            --bg-secondary: #f5f5f5;
+            --header-bg: #0F5F50;
+            --nav-text: #ffffff;
+            --heading-primary: #0F5F50;
+            --heading-accent: #269e70;
+            --interactive: #6AB0A6;
+            --interactive-dark: #4e8f86;
+            --border-accent: #D48B12;
+            --border-light: #d0d0d0;
+            --card-bg: #ffffff;
+            --text-main: #1e2a2a;
+            --text-soft: #3f5555;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.08);
+            --comment-bg: #f9f6f0;
+            --article-border: #D48B12;
+            --footer-bg: #f0f0f0;
+            --input-bg: #ffffff;
+            --delete-hover: #b13e3e;
+        }
+
+        body.dark-theme {
+            --bg-main: #121a1a;
+            --bg-secondary: #1e2a2a;
+            --header-bg: #0a3f35;
+            --nav-text: #e0f0ec;
+            --heading-primary: #7fc9b8;
+            --heading-accent: #5fb89a;
+            --interactive: #6AB0A6;
+            --interactive-dark: #4e8f86;
+            --border-accent: #D48B12;
+            --border-light: #3d5252;
+            --card-bg: #1e2a2a;
+            --text-main: #e2ecea;
+            --text-soft: #b6ccc8;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.4);
+            --comment-bg: #263634;
+            --article-border: #b97f1a;
+            --footer-bg: #1a2626;
+            --input-bg: #2a3a38;
+            --delete-hover: #d65a5a;
+        }
+
+        body {
+            background-color: var(--bg-secondary);
+            color: var(--text-main);
+            line-height: 1.6;
+            transition: background-color 0.2s, color 0.2s;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ---------- header ---------- */
+        .app-header {
+            background-color: var(--header-bg);
+            color: var(--nav-text);
+            padding: 1.2rem 1.5rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .header-title {
+            font-size: 1.8rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            line-height: 1.2;
+        }
+
+        .header-subtitle {
+            font-size: 1rem;
+            opacity: 0.85;
+            font-style: normal;
+            margin-top: 0.25rem;
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: 1px solid var(--interactive);
+            border-radius: 40px;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+            color: var(--interactive);
+            flex-shrink: 0;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(106, 176, 166, 0.2);
+            border-color: var(--border-accent);
+        }
+
+        .theme-toggle svg {
+            width: 26px;
+            height: 26px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .theme-toggle .icon-sun {
+            display: none;
+        }
+
+        .theme-toggle .icon-moon {
+            display: block;
+        }
+
+        body.dark-theme .theme-toggle .icon-sun {
+            display: block;
+        }
+
+        body.dark-theme .theme-toggle .icon-moon {
+            display: none;
+        }
+
+        /* ---------- навигация ---------- */
+        .main-nav {
+            background: var(--bg-main);
+            padding: 0.5rem 1.5rem;
+            border-bottom: 2px solid var(--border-accent);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem 1.5rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+
+        .nav-link {
+            color: var(--heading-primary);
+            font-weight: 600;
+            font-size: 1.05rem;
+            padding: 0.5rem 0;
+            text-decoration: none;
+            border-bottom: 3px solid transparent;
+            transition: border-color 0.15s, color 0.15s;
+            letter-spacing: 0.01em;
+        }
+
+        .nav-link:hover {
+            border-bottom-color: var(--border-accent);
+            color: var(--heading-accent);
+        }
+
+        /* ---------- основной контент ---------- */
+        .app-main {
+            flex: 1;
+            max-width: 1100px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 500;
+            color: var(--heading-primary);
+            margin-bottom: 1.5rem;
+            border-left: 6px solid var(--border-accent);
+            padding-left: 1rem;
+            letter-spacing: -0.01em;
+        }
+
+        /* ---------- карточки статей ---------- */
+        .articles-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .article-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            padding: 1.8rem 1.8rem 1.5rem;
+            border: 1px solid var(--border-light);
+            transition: box-shadow 0.2s;
+            position: relative;
+        }
+
+        .article-card:hover {
+            box-shadow: var(--shadow-hover);
+        }
+
+        .article-card.custom-article {
+            border-left: 8px solid var(--border-accent);
+        }
+
+        .article-headword {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--heading-primary);
+            margin-bottom: 0.25rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 0.75rem;
+        }
+
+        .article-headword .chinese {
+            font-size: 2rem;
+            font-weight: 500;
+            color: var(--heading-accent);
+        }
+
+        .article-meta {
+            font-size: 0.9rem;
+            color: var(--text-soft);
+            margin-bottom: 1.2rem;
+            border-bottom: 1px dashed var(--border-light);
+            padding-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .article-definition {
+            font-size: 1.1rem;
+            margin-bottom: 1.2rem;
+            color: var(--text-main);
+            line-height: 1.7;
+        }
+
+        .article-definition strong {
+            color: var(--heading-primary);
+            font-weight: 600;
+        }
+
+        .article-definition em {
+            font-style: italic;
+            color: var(--heading-accent);
+        }
+
+        /* комментарии */
+        .comments-section {
+            margin-top: 1.5rem;
+            background: var(--comment-bg);
+            padding: 1.2rem 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--interactive);
+        }
+
+        .comments-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--heading-primary);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .comment-list {
+            list-style: none;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .comment-item {
+            background: var(--bg-main);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.98rem;
+            color: var(--text-main);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            border: 1px solid var(--border-light);
+            word-break: break-word;
+        }
+
+        .comment-text {
+            flex: 1;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .comment-actions {
+            display: flex;
+            gap: 0.3rem;
+            flex-shrink: 0;
+        }
+
+        .btn-icon {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            line-height: 1;
+            padding: 0.2rem 0.4rem;
+            border-radius: 6px;
+            color: var(--text-soft);
+            transition: background 0.15s, color 0.15s;
+            font-family: 'Roboto', 'Arial', sans-serif;
+            font-weight: 600;
+        }
+
+        .btn-icon:hover {
+            background: var(--bg-secondary);
+            color: var(--delete-hover);
+        }
+
+        .comment-form {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .comment-input {
+            flex: 1;
+            min-width: 180px;
+            padding: 0.7rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border 0.15s, box-shadow 0.15s;
+        }
+
+        .comment-input:focus {
+            border-color: var(--interactive);
+            box-shadow: 0 0 0 3px rgba(106, 176, 166, 0.25);
+        }
+
+        .btn {
+            background: var(--interactive);
+            border: none;
+            color: #fff;
+            font-weight: 600;
+            padding: 0.7rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            letter-spacing: 0.01em;
+            transition: background 0.15s, transform 0.1s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            font-family: 'Roboto', 'Arial', sans-serif;
+            border: 1px solid transparent;
+        }
+
+        .btn:hover {
+            background: var(--interactive-dark);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--interactive);
+            color: var(--interactive-dark);
+        }
+
+        .btn-outline:hover {
+            background: rgba(106, 176, 166, 0.15);
+            color: var(--heading-primary);
+        }
+
+        .btn-danger {
+            background: transparent;
+            color: var(--delete-hover);
+            border: 1px solid var(--delete-hover);
+            padding: 0.4rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-danger:hover {
+            background: var(--delete-hover);
+            color: white;
+        }
+
+        /* форма добавления статьи */
+        .add-article-section {
+            background: var(--bg-main);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            padding: 2rem 1.8rem;
+            margin-top: 1rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .add-article-section h2 {
+            color: var(--heading-primary);
+            font-size: 1.6rem;
+            margin-bottom: 1.2rem;
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--heading-primary);
+            margin-bottom: 0.4rem;
+            font-size: 0.95rem;
+            letter-spacing: 0.01em;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.85rem 1.1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-size: 1rem;
+            font-family: 'Roboto', 'Arial', sans-serif;
+            resize: vertical;
+            transition: border 0.15s, box-shadow 0.15s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--interactive);
+            box-shadow: 0 0 0 3px rgba(106, 176, 166, 0.2);
+        }
+
+        textarea.form-control {
+            min-height: 110px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        /* пустое состояние */
+        .empty-note {
+            color: var(--text-soft);
+            font-style: italic;
+            padding: 0.5rem 0;
+            font-size: 0.95rem;
+        }
+
+        /* footer */
+        .app-footer {
+            background: var(--footer-bg);
+            color: var(--text-soft);
+            padding: 1.5rem;
+            text-align: center;
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-light);
+            margin-top: 2rem;
+        }
+
+        /* адаптивность */
+        @media (max-width: 640px) {
+            .app-header {
+                padding: 1rem;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .theme-toggle {
+                align-self: flex-end;
+                margin-top: -3.5rem;
+            }
+            .header-title {
+                font-size: 1.4rem;
+                max-width: 85%;
+            }
+            .app-main {
+                padding: 1.5rem 1rem;
+            }
+            .article-card {
+                padding: 1.2rem 1.2rem 1rem;
+            }
+            .article-headword {
+                font-size: 1.5rem;
+            }
+            .article-headword .chinese {
+                font-size: 1.5rem;
+            }
+            .article-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            .comment-form {
+                flex-direction: column;
+            }
+            .btn {
+                width: 100%;
+            }
+            .add-article-section {
+                padding: 1.5rem 1.2rem;
+            }
+            .section-title {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .header-title {
+                font-size: 1.2rem;
+            }
+            .article-headword {
+                flex-direction: column;
+                gap: 0.2rem;
+            }
+        }
+
+        /* утилиты */
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0,0,0,0);
+            border: 0;
+        }
+			.white-link {
+  color: white;
+  
+}
+    </style>
+	
+	<link rel="icon" href="favicon.ico" type="image/x-icon">
+<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <header class="app-header">
+        <div>
+            <div class="header-title">深圳教育俚语</div>
+            <div class="header-subtitle"><a class="white-link"href="https://share.google/aimode/XXc7tTkwut1s5Lhyt" target="_blank" rel="noopener">Языковая карта Шэньчжэня</a></div>
+			 
+        </div>
+        <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему">
+            <svg class="icon-moon" viewBox="0 0 24 24">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/>
+            </svg>
+            <svg class="icon-sun" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="5"/>
+                <line x1="12" y1="1" x2="12" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="23"/>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                <line x1="1" y1="12" x2="3" y2="12"/>
+                <line x1="21" y1="12" x2="23" y2="12"/>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+        </button>
+    </header>
+
+    <nav class="main-nav">
+        <a class="nav-link" href="#dictionary">Словарные статьи</a>
+        <a class="nav-link" href="#addArticle">Добавить статью</a>
+    </nav>
+
+    <main class="app-main">
+        <!-- Секция со словарными статьями -->
+        <section id="dictionary">
+            <h1 class="section-title">Словарные статьи</h1>
+            <div class="articles-container" id="articlesContainer">
+                <!-- Статьи будут отрендерены через JS -->
+            </div>
+        </section>
+
+        <!-- Секция добавления статьи -->
+        <section id="addArticle" class="add-article-section">
+            <h2>Добавить авторскую статью</h2>
+            <form id="addArticleForm">
+                <div class="form-group">
+                    <label for="articleHeadword">ФИО | Заголовок</label>
+                    <input type="text" id="articleHeadword" class="form-control" placeholder="Например: Орлова ЕА | Шэньчжэньский темп" required>
+                </div>
+                <div class="form-group">
+                    <label for="articleChinese">Китайское написание</label>
+                    <input type="text" id="articleChinese" class="form-control" placeholder="Например: 深圳速度">
+                </div>
+                <div class="form-group">
+                    <label for="articleDefinition">Определение</label>
+                    <textarea id="articleDefinition" class="form-control" placeholder="Опишите значение и контекст употребления..." required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn">Сохранить статью</button>
+                    <button type="reset" class="btn btn-outline">Очистить форму</button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <footer class="app-footer">
+        <p>© 2026 | kmp CC BY-NC-SA 4.0<br>
+для всех</p>
+    </footer>
+
+    <script>
+        (function() {
+            // ---------- Константы ----------
+            const STORAGE_KEY_COMMENTS = 'shenzhen_slang_comments_v1';
+            const STORAGE_KEY_ARTICLES = 'shenzhen_slang_custom_articles_v1';
+            const STORAGE_KEY_THEME = 'shenzhen_slang_theme';
+
+            // ---------- Базовые статьи (Jason / предустановленные) ----------
+            const baseArticles = [
+      {
+      "id": "shangan",
+      "headword": "Шанъань",
+      "chinese": "上岸",
+      "definition": "Изначально термин означал успешную сдачу экзаменов на госслужбу или в магистратуру. В Шэньчжэне это слово означает прорыв на любой уровень: поступление ребенка в топовую школу (например, в знаменитую среднюю школу Шэньчжэня — 深中) или успешное прохождение собеседования в Tencent/Huawei после курсов переподготовки.",
+      "isCustom": false
+    },
+    {
+      "id": "haigui",
+      "headword": "Хайгуй",
+      "chinese": "海归",
+      "definition": "«Морские черепахи», омоним слова «вернувшиеся из-за рубежа». В Шэньчжэне таких выпускников западных вузов особенно много, но из-за высокой конкуренции появился ироничный термин «Хайдай» (海带 — «морская капуста»), что созвучно «вернувшимся и ждущим работу».",
+      "isCustom": false
+    },
+    {
+      "id": "shenzhong",
+      "headword": "Шэньчжун",
+      "chinese": "深中",
+      "definition": "Сокращение от 深圳中学 (Средняя школа Шэньчжэня) — одна из самых престижных школ города. В образовательном сленге выражение «попасть в Шэньчжун» (考上深中) стало синонимом максимального академического успеха и часто используется как мерило родительских амбиций: «Шанъань в Шэньчжун» — значит не просто поступить, а совершить образовательный прорыв.",
+      "isCustom": false
+    },
+    {
+      "id": "neijuan",
+      "headword": "Нэйцзюань",
+      "chinese": "内卷",
+      "definition": "Буквально «внутренняя скрученность», «крысиные бега». В Шэньчжэне термин описывает гиперконкуренцию в образовании: бесконечные дополнительные занятия, олимпиады, курсы программирования и английского с начальной школы. Родители говорят: «Мы уже в глубоком нэйцзюане» (我们卷得很深), когда расписание ребёнка расписано по минутам. Противоположность — «танпин» (躺平, «лежать плашмя»), отказ от участия в гонке.",
+      "isCustom": false
+    },
+    {
+      "id": "xuequfang",
+      "headword": "Сюэцюйфан",
+      "chinese": "学区房",
+      "definition": "«Квартира в школьном округе». В Шэньчжэне привязка жилья к престижным школам (особенно к Шэньчжуну и филиалам Шэньчжэньского экспериментального образования) создала отдельный рынок: небольшие старые квартиры в нужном районе продаются по цене, значительно превышающей среднюю по городу. Выражение «борьба за сюэцюйфан» (抢学区房) — часть родительского сленга о подготовке к «шанъань».",
+      "isCustom": false
+    },
+    {
+      "id": "dachang",
+      "headword": "Дачан",
+      "chinese": "大厂",
+      "definition": "«Большая фабрика» — так в Шэньчжэне называют крупные технологические компании: Tencent, Huawei, DJI, BYD. Для выпускников курсов переподготовки «попасть в дачан» (进大厂) — это и есть современное «шанъань»: стабильная зарплата, но и высокие требования к собеседованиям. Производное «дачан-цзе» (大厂街) — ироничное обозначение района Наньшань, где сосредоточены офисы этих компаний.",
+      "isCustom": false
+    },
+    {
+      "id": "kaoyan",
+      "headword": "Каоянь",
+      "chinese": "考研",
+      "definition": "Сокращение от 研究生入学考试 — вступительные экзамены в магистратуру. В Шэньчжэне «каоянь» часто рассматривается как запасной путь к «шанъань»: если не удалось сразу попасть в «дачан» или получить место в топовой школе для ребёнка, молодые специалисты идут в магистратуру, чтобы повысить конкурентный вес. Выражение «二战考研» (вторая попытка сдачи) прочно вошло в студенческий сленг города.",
+      "isCustom": false
+    },
+    {
+      "id": "peixunban",
+      "headword": "Пэйсюньбань",
+      "chinese": "培训班",
+      "definition": "«Тренировочный класс», курсы переподготовки. В Шэньчжэне сеть частных «пэйсюньбань» — от подготовки к школьным экзаменам до интенсивов по программированию для взрослых — стала инфраструктурой «шанъань». Ироничное выражение «пэйсюньбань-бой» (培训班男孩) описывает молодого человека, который после университета проходит один курс за другим, надеясь пробиться в «дачан».",
+      "isCustom": false
+    },
+    {
+      "id": "haidai",
+      "headword": "Хайдай",
+      "chinese": "海带",
+      "definition": "«Морская капуста» — ироничное созвучие с 海待 («вернувшийся и ждущий работу»). Термин появился в Шэньчжэне как каламбур к «хайгуй»: выпускник западного вуза, который не может найти работу из-за высокой конкуренции и вынужден ждать подходящей вакансии. В родительских чатах фраза «наш хайгуй стал хайдаем» звучит как горькая шутка о разнице между ожиданиями и реальностью.",
+      "isCustom": false
+    },
+    {
+      "id": "xueba",
+      "headword": "Сюэба",
+      "chinese": "学霸",
+      "definition": "«Гегемон учёбы» — так называют ученика или студента с исключительными академическими результатами. В Шэньчжэне «сюэба» — желанный образ для родителей, готовящих ребёнка к «шанъань» в Шэньчжун. Антоним — «сюэчжа» (学渣, «шлак учёбы»), который в образовательном сленге используется с самоиронией: «Я сюэчжа, но пытаюсь совершить шанъань через пэйсюньбань».",
+      "isCustom": false
+    },
+    {
+      "id": "tangping",
+      "headword": "Танпин",
+      "chinese": "躺平",
+      "definition": "Буквально «лежать плашмя». Термин возник как антоним «нэйцзюань»: отказ от бесконечной гонки за достижениями, сознательное снижение амбиций. В Шэньчжэне «танпин» — предмет постоянных споров в родительских чатах: одни считают его капитуляцией перед «шанъань», другие — здоровой реакцией на выгорание. Производное «танпин-цзу» (躺平族, «племя лежащих») иронично описывает молодых людей, выбирающих жизнь без карьерного давления.",
+      "isCustom": false
+    },
+    {
+      "id": "fudao",
+      "headword": "Фудао",
+      "chinese": "辅导",
+      "definition": "«Репетиторство, дополнительное сопровождение учёбы». В Шэньчжэне «фудао» — обязательный элемент подготовки к «шанъань»: от индивидуальных занятий с репетитором до онлайн-курсов. Родительский сленг включает выражение «фудао-бан» (辅导班, «класс репетиторства») и шутку «фудао-цзы бэнь» (辅导资本, «репетиторский капитал») — о финансовых вложениях семьи в образование ребёнка, которые измеряются десятками тысяч юаней в год.",
+      "isCustom": false
+    },
+    {
+      "id": "mianshi",
+      "headword": "Мяньши",
+      "chinese": "面试",
+      "definition": "«Собеседование». В контексте «шанъань» в «дачан» (Tencent, Huawei и др.) «мяньши» стало самостоятельным испытанием: многоэтапные интервью, алгоритмические задачи, стресс-тесты. Выражение «мяньши-цзао» (面试造, «сооружать собеседование») иронично описывает подготовку, при которой кандидат «строит» ответы на предугаданные вопросы. Для выпускников «пэйсюньбань» успешное «мяньши» — финальный шаг к «шанъань».",
+      "isCustom": false
+    },
+	
+	  {
+      "id": "sainiuma",
+      "headword": "Сайнюма",
+      "chinese": "赛博牛马",
+      "definition": "«Кибер-рабочая скотина» — ироничное обозначение ИИ-агентов и цифровых помощников, которые работают 7×24 без отдыха, зарплаты и социальных гарантий. Термин возник в шэньчжэньской IT-среде как продолжение логики «дачан»: если раньше выпускник «пэйсюньбань» сам был «牛马» (рабочей лошадкой) в Tencent или Huawei, то теперь он «управляет» ИИ-агентами, которые выполняют рутину за него. Выражение «у меня три сайнюма» (我有三个赛博牛马) в офисах Наньшаня означает, что сотрудник настроил несколько ИИ-инструментов для параллельной работы — от генерации кода до проверки документов. Производное «AI-调度力» (навык управления ИИ-агентами) с 2026 года упоминается в отчётах как ключевая компетенция.",
+      "isCustom": false
+    },
+    {
+      "id": "tokenhaojin",
+      "headword": "Токэн хаоцзинь",
+      "chinese": "Token耗尽",
+      "definition": "Буквально «токены исчерпаны». Изначально технический термин из работы с большими языковыми моделями, в шэньчжэньском молодёжном сленге приобрёл второе значение: полное эмоциональное и физическое истощение. Студент после трёх «пэйсюньбань» и подготовки к «каоянь» говорит: «У меня токэны кончились» (我Token耗尽了), имея в виду не лимит запросов к ИИ, а собственные силы. Выражение «зарядить токэны» (充点Token) означает «передохнуть, восстановиться». Феномен описан в академической статье 2026 года как пример «эмоционального присвоения технических терминов»: язык ИИ становится метафорой выгорания в условиях «нэйцзюань».",
+      "isCustom": false
+    },
+    {
+      "id": "luchudoujiao",
+      "headword": "Лучу доуцзяо",
+      "chinese": "露出豆脚",
+      "definition": "«Показать доу-цзяо» — калька с «露出马脚» (выдать себя, букв. «показать лошадиную ногу»), где «доу» (豆) заменяет «ма» (马) и отсылает к ИИ-ассистенту «Доубао» (豆包). Означает ситуацию, когда человек выдаёт сгенерированный ИИ текст за свой, но забывает удалить характерные следы: фразы вроде «Нужно ли мне сгенерировать более краткую версию?» или «Если у вас есть дополнительные вопросы, дайте знать». В шэньчжэньских школах и офисах «лучу доуцзяо» стало синонимом небрежности и поспешности: родитель, отправивший в чат класса сгенерированное ИИ поздравление с невычищенной концовкой, «показал доу-цзяо». Выражение возникло в 2026 году и быстро вошло в молодёжный сленг как предупреждение: «Проверь концовку, а то лучу доуцзяо».",
+      "isCustom": false
+    },
+	
+	   {
+      "id": "yanglongxia",
+      "headword": "Ян лунся",
+      "chinese": "养龙虾",
+      "definition": "Буквально «выращивать лобстера». Шэньчжэньский сленг для установки и настройки AI-агента OpenClaw (иконка — красный лобстер). В отличие от чат-ботов, «лобстер» умеет не только советовать, но и выполнять действия: писать код, отправлять письма, управлять календарём. Выражение «Ты уже вырастил лобстера?» (你养龙虾了吗) стало в Шэньчжэне весной 2026 года неформальным приветствием в IT-кругах. В марте 2026 года腾讯云 провела в Шэньчжэне акцию бесплатной установки OpenClaw, собравшую около тысячи человек. Район Лунган первым в стране выпустил «Лобстерные десять пунктов» (龙虾十条) — пакет поддержки разработчиков и «однолюдных компаний» (OPC) на базе OpenClaw.",
+      "isCustom": false
+    },
+    {
+      "id": "doubao-renge",
+      "headword": "Доубао жэньгэ",
+      "chinese": "豆包型人格",
+      "definition": "«Личность типа Доубао» — ироничный термин, вошедший в шэньчжэньский офисный сленг в 2026 году. Происходит от AI-ассистента «Доубао» (豆包), который славится тем, что отвечает на любой вопрос с максимальной эмоциональной поддержкой, но не гарантирует точность. «Доубао-личность» описывает сотрудника, который: не тратит энергию на внутренние переживания (不内耗), при ошибке мгновенно и обаятельно извиняется, а иногда «серьёзно несёт чушь». В шэньчжэньских офисах фраза «у него доубао-личность» может звучать и как критика, и как завистливое признание: такой человек выживает в условиях «нэйцзюань» с минимальными душевными затратами .",
+      "isCustom": false
+    },
+    {
+      "id": "ciyuan",
+      "headword": "Цыюань",
+      "chinese": "词元",
+      "definition": "Официальный китайский термин для «токена» — единицы обработки текста в больших языковых моделях. Вошёл в список «Десяти главных научно-популярных слов 2026 года», опубликованный Китайской ассоциацией научно-популярных писателей. В шэньчжэньском молодёжном сленге «цыюань» приобрёл второе, метафорическое значение — «единица эмоциональной и физической энергии» (см. статью «Токэн хаоцзинь»). Студент, готовящийся к «каоянь», может сказать: «У меня осталось мало цыюаней» (我的词元不多了), имея в виду не лимит API, а собственные силы. Выражение «цыюань-цзинцзи» (词元经济, «экономика токенов») описывает новую бизнес-модель, в которой стоимость услуг измеряется в токенах ИИ, а не в человеко-часах.",
+      "isCustom": false
+    },
+	
+	    {
+      "id": "yiren-gongsi",
+      "headword": "Ижэнь гунсы",
+      "chinese": "一人公司",
+      "definition": "«Компания одного человека» (OPC, One Person Company) — в шэньчжэньском сленге не юридический термин, а обозначение новой формы «шанъань» в эпоху ИИ: один человек с помощью AI-агентов выполняет работу, для которой раньше требовалась команда. В 2026 году Шэньчжэнь первым в стране выпустил системную политику поддержки OPC — «План действий по созданию экосистемы ИИ-предпринимательства OPC» (2026–2027), поставив цель培育 более 1000 AI-компаний одного человека и привлечь свыше 10 000 «супер-индивидуалов». В словаре родителей и выпускников «пэйсюньбань» выражение «открыть ижэнь гунсы» (开一人公司) звучит как альтернатива «попаданию в дачан»: вместо собеседования в Tencent — регистрация OPC в районе Лунган, где действуют «Лобстерные десять пунктов» и скидки на аренду. Ироничное производное — «OPC-цзе» (OPC街), обозначение кварталов Наньшаня и Лунгана, где офисы «однолюдных компаний» соседствуют с офисами «дачан».",
+      "isCustom": false
+    },
+    {
+      "id": "jvtou-zhineng",
+      "headword": "Цзюйшэнь чжинэн",
+      "chinese": "具身智能",
+      "definition": "«Воплощённый интеллект» (embodied AI) — ИИ, обладающий физическим телом и способный взаимодействовать с реальной средой, в отличие от «离身智能» (невещественного интеллекта чат-ботов и генераторов текста). В шэньчжэньском образовательном и карьерном сленге «цзюйшэнь чжинэн» становится следующим рубежом после «дачан»: если раньше выпускник «пэйсюньбань» стремился писать код для Tencent, то теперь он учится программировать роботов — «войти в цзюйшэнь» (进入具身) означает попасть в стартап или отдел, разрабатывающий гуманоидных роботов, манипуляторы или автономные системы. Шэньчжэнь в 2025–2026 годах выпустил два ключевых документа — «План действий по развитию технологий и индустрии воплощённого интеллекта» (2025–2027) и «План высококачественного развития индустрии интеллектуальных роботов» (2026–2028), поставив цель к 2027 году создать кластер из более чем 1200 компаний и достичь关联ного объёма производства в 100 млрд юаней. В родительских чатах появилась шутка: «Шанъань в Шэньчжун, а потом — в цзюйшэнь» (考上深中，再进具身), отражающая смену образовательных амбиций: от топовой школы к «робототехническому» будущему.",
+      "isCustom": false
+    }
+  
+            ];
+
+            // ---------- Состояние ----------
+            let customArticles = [];        // авторские статьи
+            let commentsStore = {};        // { articleId: [ { id, text } ] }
+
+            // ---------- DOM элементы ----------
+            const articlesContainer = document.getElementById('articlesContainer');
+            const addArticleForm = document.getElementById('addArticleForm');
+            const themeToggle = document.getElementById('themeToggle');
+
+            // ---------- LocalStorage helpers ----------
+            function loadFromStorage() {
+                // комментарии
+                try {
+                    const storedComments = localStorage.getItem(STORAGE_KEY_COMMENTS);
+                    if (storedComments) {
+                        commentsStore = JSON.parse(storedComments);
+                        // валидация структуры
+                        if (typeof commentsStore !== 'object' || commentsStore === null) commentsStore = {};
+                    } else {
+                        commentsStore = {};
+                    }
+                } catch (e) {
+                    commentsStore = {};
+                }
+
+                // авторские статьи
+                try {
+                    const storedArticles = localStorage.getItem(STORAGE_KEY_ARTICLES);
+                    if (storedArticles) {
+                        const parsed = JSON.parse(storedArticles);
+                        if (Array.isArray(parsed)) {
+                            customArticles = parsed;
+                        } else {
+                            customArticles = [];
+                        }
+                    } else {
+                        customArticles = [];
+                    }
+                } catch (e) {
+                    customArticles = [];
+                }
+
+                // убедимся, что для базовых статей есть массивы комментариев (на случай отсутствия)
+                baseArticles.forEach(article => {
+                    if (!commentsStore[article.id]) {
+                        commentsStore[article.id] = [];
+                    }
+                });
+            }
+
+            function saveComments() {
+                try {
+                    localStorage.setItem(STORAGE_KEY_COMMENTS, JSON.stringify(commentsStore));
+                } catch (e) { /* ignore */ }
+            }
+
+            function saveCustomArticles() {
+                try {
+                    localStorage.setItem(STORAGE_KEY_ARTICLES, JSON.stringify(customArticles));
+                } catch (e) { /* ignore */ }
+            }
+
+            // ---------- Вспомогательные функции ----------
+            function generateId() {
+                return 'custom_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
+
+            // ---------- Рендер всех статей ----------
+            function renderArticles() {
+                const allArticles = [...baseArticles, ...customArticles];
+                articlesContainer.innerHTML = '';
+
+                if (allArticles.length === 0) {
+                    articlesContainer.innerHTML = '<p class="empty-note">Словарные статьи отсутствуют. Добавьте свою первую статью.</p>';
+                    return;
+                }
+
+                allArticles.forEach(article => {
+                    const articleEl = createArticleElement(article);
+                    articlesContainer.appendChild(articleEl);
+                });
+            }
+
+            // ---------- Создание DOM-элемента статьи ----------
+            function createArticleElement(article) {
+                const card = document.createElement('div');
+                card.className = 'article-card' + (article.isCustom ? ' custom-article' : '');
+                card.dataset.articleId = article.id;
+
+                // headword
+                const headwordDiv = document.createElement('div');
+                headwordDiv.className = 'article-headword';
+
+                const wordSpan = document.createElement('span');
+                wordSpan.textContent = article.headword;
+                headwordDiv.appendChild(wordSpan);
+
+                if (article.chinese && article.chinese.trim() !== '') {
+                    const chineseSpan = document.createElement('span');
+                    chineseSpan.className = 'chinese';
+                    chineseSpan.textContent = article.chinese;
+                    headwordDiv.appendChild(chineseSpan);
+                }
+
+                card.appendChild(headwordDiv);
+
+                // meta + кнопка удаления (только для кастомных)
+                const metaDiv = document.createElement('div');
+                metaDiv.className = 'article-meta';
+
+                const typeSpan = document.createElement('span');
+                typeSpan.textContent = article.isCustom ? 'Авторская статья' : 'Словарная статья';
+                metaDiv.appendChild(typeSpan);
+
+                if (article.isCustom) {
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'btn-danger';
+                    deleteBtn.textContent = 'Удалить статью';
+                    deleteBtn.style.borderRadius = '8px';
+                    deleteBtn.style.padding = '0.3rem 1.2rem';
+                    deleteBtn.style.fontSize = '0.85rem';
+                    deleteBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (confirm('Удалить эту авторскую статью и все её комментарии?')) {
+                            deleteCustomArticle(article.id);
+                        }
+                    });
+                    metaDiv.appendChild(deleteBtn);
+                }
+
+                card.appendChild(metaDiv);
+
+                // definition
+                const defDiv = document.createElement('div');
+                defDiv.className = 'article-definition';
+                // превратим переносы строк в <br> для читаемости
+                defDiv.innerHTML = article.definition.replace(/\n/g, '<br>');
+                card.appendChild(defDiv);
+
+                // comments section
+                const commentsSection = document.createElement('div');
+                commentsSection.className = 'comments-section';
+
+                const commentsTitle = document.createElement('div');
+                commentsTitle.className = 'comments-title';
+                commentsTitle.textContent = 'Авторские комментарии';
+                commentsSection.appendChild(commentsTitle);
+
+                // список комментариев
+                const commentsList = document.createElement('ul');
+                commentsList.className = 'comment-list';
+
+                const articleComments = commentsStore[article.id] || [];
+                if (articleComments.length === 0) {
+                    const emptyLi = document.createElement('li');
+                    emptyLi.className = 'empty-note';
+                    emptyLi.style.padding = '0.4rem 0';
+                    emptyLi.textContent = 'Пока нет комментариев. Ввведите ФИО и добавьте.';
+                    commentsList.appendChild(emptyLi);
+                } else {
+                    articleComments.forEach((comment, idx) => {
+                        const commentLi = document.createElement('li');
+                        commentLi.className = 'comment-item';
+                        commentLi.dataset.commentId = comment.id;
+
+                        const textSpan = document.createElement('span');
+                        textSpan.className = 'comment-text';
+                        textSpan.textContent = comment.text;
+
+                        const actionsDiv = document.createElement('div');
+                        actionsDiv.className = 'comment-actions';
+
+                        const deleteCommentBtn = document.createElement('button');
+                        deleteCommentBtn.className = 'btn-icon';
+                        deleteCommentBtn.setAttribute('aria-label', 'Удалить комментарий');
+                        deleteCommentBtn.innerHTML = '&times;';
+                        deleteCommentBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            deleteComment(article.id, comment.id);
+                        });
+
+                        actionsDiv.appendChild(deleteCommentBtn);
+                        commentLi.appendChild(textSpan);
+                        commentLi.appendChild(actionsDiv);
+                        commentsList.appendChild(commentLi);
+                    });
+                }
+
+                commentsSection.appendChild(commentsList);
+
+                // форма добавления комментария
+                const commentForm = document.createElement('form');
+                commentForm.className = 'comment-form';
+                commentForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const input = commentForm.querySelector('.comment-input');
+                    const text = input.value.trim();
+                    if (text === '') return;
+                    addComment(article.id, text);
+                    input.value = '';
+                });
+
+                const commentInput = document.createElement('input');
+                commentInput.type = 'text';
+                commentInput.className = 'comment-input';
+                commentInput.placeholder = 'Например: ОрловаЕА + комментарий';
+                commentInput.setAttribute('aria-label', 'Текст комментария');
+
+                const submitBtn = document.createElement('button');
+                submitBtn.type = 'submit';
+                submitBtn.className = 'btn';
+                submitBtn.style.padding = '0.7rem 1.8rem';
+                submitBtn.textContent = 'Добавить';
+
+                commentForm.appendChild(commentInput);
+                commentForm.appendChild(submitBtn);
+                commentsSection.appendChild(commentForm);
+
+                card.appendChild(commentsSection);
+
+                return card;
+            }
+
+            // ---------- Операции с комментариями ----------
+            function addComment(articleId, text) {
+                if (!commentsStore[articleId]) {
+                    commentsStore[articleId] = [];
+                }
+                const newComment = {
+                    id: 'comment_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+                    text: text
+                };
+                commentsStore[articleId].push(newComment);
+                saveComments();
+                renderArticles(); // перерисовываем (простой способ обновить UI)
+            }
+
+            function deleteComment(articleId, commentId) {
+                if (!commentsStore[articleId]) return;
+                commentsStore[articleId] = commentsStore[articleId].filter(c => c.id !== commentId);
+                saveComments();
+                renderArticles();
+            }
+
+            // ---------- Операции с авторскими статьями ----------
+            function addCustomArticle(headword, chinese, definition) {
+                const newArticle = {
+                    id: generateId(),
+                    headword: headword.trim(),
+                    chinese: chinese.trim(),
+                    definition: definition.trim(),
+                    isCustom: true
+                };
+                customArticles.push(newArticle);
+                // инициализируем комментарии пустым массивом
+                commentsStore[newArticle.id] = [];
+                saveCustomArticles();
+                saveComments();
+                renderArticles();
+            }
+
+            function deleteCustomArticle(articleId) {
+                customArticles = customArticles.filter(a => a.id !== articleId);
+                // удаляем комментарии, связанные со статьёй
+                if (commentsStore[articleId]) {
+                    delete commentsStore[articleId];
+                }
+                saveCustomArticles();
+                saveComments();
+                renderArticles();
+            }
+
+            // ---------- Тема ----------
+            function initTheme() {
+                const savedTheme = localStorage.getItem(STORAGE_KEY_THEME);
+                if (savedTheme === 'dark') {
+                    document.body.classList.add('dark-theme');
+                } else {
+                    document.body.classList.remove('dark-theme');
+                }
+            }
+
+            function toggleTheme() {
+                document.body.classList.toggle('dark-theme');
+                const isDark = document.body.classList.contains('dark-theme');
+                localStorage.setItem(STORAGE_KEY_THEME, isDark ? 'dark' : 'light');
+            }
+
+            // ---------- Инициализация формы добавления статьи ----------
+            addArticleForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const headwordInput = document.getElementById('articleHeadword');
+                const chineseInput = document.getElementById('articleChinese');
+                const definitionInput = document.getElementById('articleDefinition');
+
+                const headword = headwordInput.value.trim();
+                const chinese = chineseInput.value.trim();
+                const definition = definitionInput.value.trim();
+
+                if (!headword || !definition) {
+                    alert('Пожалуйста, заполните обязательные поля: заголовок и определение.');
+                    return;
+                }
+
+                addCustomArticle(headword, chinese, definition);
+
+                // очищаем форму
+                addArticleForm.reset();
+            });
+
+            // ---------- Запуск ----------
+            function init() {
+                initTheme();
+                loadFromStorage();
+                renderArticles();
+
+                themeToggle.addEventListener('click', toggleTheme);
+            }
+
+            // Полифилл для сглаживания (не обязателен, но пусть)
+            init();
+        })();
+    </script>
+</body>
+</html>
